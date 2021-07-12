@@ -19,7 +19,7 @@ foreach ($sites as $key => $site) {
     $command = str_replace(':key', $key, $commandPattern);
     echo "Executing command `$command` on $site\n";
     `$command 1>&2`;
-    echo "Don't forget stdout is piped to stderr!"
+    echo "Don't forget stdout is piped to stderr!";
     $done[] = $site;
   }
 }
