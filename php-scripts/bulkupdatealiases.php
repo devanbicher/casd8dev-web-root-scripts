@@ -10,3 +10,5 @@ $entities = array_merge($entities, $entity_storage->loadMultiple($result));
 foreach ($entities as $entity) {
 \Drupal::service('pathauto.generator')->updateEntityAlias($entity, 'update');
 }
+
+echo("all done updating aliases");
