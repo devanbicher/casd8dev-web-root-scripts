@@ -10,7 +10,7 @@ deptlog=$(git log -n1 --pretty='Department Install Profile Commit: %cn on %cD  M
 cd /var/www/casdev/web/files/cas_department_base/config
 
 #install the site
-/usr/local/bin/drush @casdev.cas_department_base -y site-install cas_department --account-name=cas_department_base_admin --account-mail=incasweb@lehigh.edu --site-mail=incasweb@lehigh.edu --account-pass=$(pwgen 16) --site-name="CAS Department Base (casd8devserver)"
+/usr/local/bin/drush @casdev.cas_department_base -y site-install cas_department --account-name=cas_department_base_admin --account-mail=incasweb@lehigh.edu --site-mail=incasweb@lehigh.edu --account-pass=$(pwgen 16) --site-name="CAS Department Base (casd8dev)"
 
 #export the config for the newly installed site.
 /usr/local/bin/drush @casdev.cas_department_base -y config:export

@@ -45,7 +45,7 @@ drush @casdev."$1" -y config:export
 git add ./*.yml
 git commit -am "Most recent config for the site, BEFORE the site overwrite/install"
 ### NOW install/overwrite the site.
-drush @casdev."$1" site-install cas_department --account-name="$1"_cas_admin --account-mail=incasweb@lehigh.edu --site-mail=incasweb@lehigh.edu --account-pass=$(pwgen 16) --site-name="CASDEV $1 Site (casd8devserver)"
+drush @casdev."$1" site-install cas_department --account-name="$1"_cas_admin --account-mail=incasweb@lehigh.edu --site-mail=incasweb@lehigh.edu --account-pass=$(pwgen 16) --site-name="CASDEV $1 (casd8dev)"
 #export the config for the newly installed site.
 drush @casdev."$1" -y config:export
 git add ./*.yml
