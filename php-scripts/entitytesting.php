@@ -6,22 +6,22 @@ use Drupal\node\Entity\Node;
 
 
 // Load All nodes.
-$node_result = \Drupal::entityQuery('node')
-->condition('nid',13,'=')
-->execute();
 
-$a_node = Node::load(1);
+$node_result = \Drupal::entityQuery('block')->execute();
+//->condition('plugin','block_content','STARTS_WITH')
+//->condition('id','stable_footeraddress','<>')
+//->execute();
 
-if($a_node){
-    echo("can use this as a boolean");
+$blocks_storage = \Drupal::entityTypeManager()->getStorage('block');
+$blocks = $blocks_storage->loadMultiple($node_result);
+
+echo(count($blocks)."\n");
+//print_r($blocks);
+foreach($blocks as $bid => $block) {
+    print($bid."\n");
+    //print_r($block->toArray());
+    //print_r($block->toArray());
+
 }
 
-//print_r($a_node);
-
-
-$nodes_storage = \Drupal::entityTypeManager()->getStorage('node');
-$nodes = $nodes_storage->loadMultiple($node_result);
-
-foreach($nodes as $nid => $node) {
-    print($nid."\n");
-}
+print_r($blocks['topnavigation']->toArray());

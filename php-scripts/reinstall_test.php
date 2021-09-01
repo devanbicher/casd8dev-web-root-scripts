@@ -7,6 +7,8 @@ use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\block_content\Entity\BlockContent;
+use Drupal\block\Entity\Block;
 
 // Load All nodes.
 echo("loading nodes\n");
@@ -38,23 +40,38 @@ $menu_result = \Drupal::entityQuery('menu_link_content')->execute();
 $menu_storage = \Drupal::entityTypeManager()->getStorage('menu_link_content');
 $menu_multiple = $menu_storage->loadMultiple($menu_result);
 
+echo("loading block_content\n");
+$block_cont_result = \Drupal::entityQuery('block_content')->execute();
+$block_cont_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+$block_cont_multiple = $block_cont_storage->loadMultiple($block_cont_result);
+
+echo("loading blocks\n");
+$blocks_result = \Drupal::entityQuery('block')
+->condition('plugin','block_content','STARTS_WITH')
+->condition('id','stable_footeraddress','<>')
+->execute();
+$blocks_storage = \Drupal::entityTypeManager()->getStorage('block');
+$blocks_multiple = $blocks_storage->loadMultiple($blocks_result);
+
+
 ############# loaded everthing. now reinstalling site. ##################
 $myoutput = [];
 //exec('sh /var/www/casdev/web/scripts/bash-scripts/cas_department_install4overwrite.sh cleanparagraphs',$myoutput);
-echo("reinstalling site");
+echo("reinstalling site\n");
+
 exec('$(drush @casdev.cleanparagraphs sql:connect) < /var/www/casdev/web/sites/cleanparagraphs/files/private/backup_migrate/cleanparagraphs-reinstall-1027-090121.sql');
 
 foreach($myoutput as $output) {
      echo($output."\n");
 }
 
-echo("reinstall complete. cleaing caches");
+echo("reinstall complete. cleaing caches\n");
 
 exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
 //\Drupal::cache('menu')->invalidateAll();
 //\Drupal::service('plugin.manager.menu.link')->rebuild();
 
-echo("running other script.");
+echo("running other script.\n");
 
 exec('drush @casdev.cleanparagraphs scr scripts/php-scripts/delete_menus_nodes.php',$myoutput);
 
@@ -62,38 +79,9 @@ foreach($myoutput as $output) {
      echo($output."\n");
 }
 
-#delete nodes that already from the new profile.
-
-//what if we create a new node, add it to the main navigation, then don't delete just tha
-
-/*
-echo("deleting menus from the new site.");
-$new_menu_result = \Drupal::entityQuery('menu_link_content')->execute();
-$new_menu_storage = \Drupal::entityTypeManager()->getStorage('menu_link_content');
-$new_menu_multiple = $new_menu_storage->loadMultiple($new_menu_result);  
-foreach($new_menu_multiple as $delete_menu){
-     echo($delete_menu->uuid()."   ".$delete_menu->getTitle()."   ".$delete_menu->getMenuName()."\n");
-     $delete_menu->delete();
-}
-
-exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
-
-echo("deleting nodes from new site");
-$new_node_result = \Drupal::entityQuery('node')->execute();
-$new_nodes_storage = \Drupal::entityTypeManager()->getStorage('node');
-$new_node_multiple = $new_nodes_storage->loadMultiple($new_node_result);
-krsort($new_node_multiple);
-foreach($new_node_multiple as $dnid => $delete_node) {
-     echo("deleted: ".strval($dnid));
-     $delete_node->delete();
-     \Drupal::cache('menu')->invalidateAll();
-     \Drupal::service('plugin.manager.menu.link')->rebuild();
-}
-*/
-
 
 #files
-echo("recreating files");
+echo("recreating files:  ".strval(count($file_multiple))."\n");
 foreach($file_multiple as $file => $one_file) {
      //print_r($one_file->toArray());
      $newfile = File::create($one_file->toArray());
@@ -101,7 +89,7 @@ foreach($file_multiple as $file => $one_file) {
 }
 
 #media
-echo("reacreating media");
+echo("reacreating media\n");
 foreach($media_multiple as $media => $one_media) {
      //print_r($one_file->toArray());
      $newmedia = Media::create($one_media->toArray());
@@ -109,7 +97,7 @@ foreach($media_multiple as $media => $one_media) {
 }
 
 #paragraphs
-echo("recreating paragraphs");
+echo("recreating paragraphs\n");
 foreach($par_multiple as $pid => $one_par) {
      //print_r($one_par->toArray());
      $newpar = Paragraph::create($one_par->toArray());
@@ -117,45 +105,55 @@ foreach($par_multiple as $pid => $one_par) {
 }
 
 #node 
-echo("recreating nodes");
+echo("recreating nodes\n");
 foreach($node_multiple as $nid => $one_node) {
-     /*
-     //print_r($one_node->toArray());
-     
-     //$node_result = \Drupal::entityQuery('node')
-     //->condition('nid',$nid,'=')
-     //->execute();
-     
-     $old_node = Node::load($nid);
-     if($old_node){
-          $old_node = $one_node;
-          $old_node->save();
-     }
-     else{
-     //if noode (from $nid) already exists
-     //load node
-     //set that node equal to $one_node
-     //save node
-     //else : the stuff before.
-
-
-          $newnode = Node::create($one_node->toArray());
-          $newnode->save();
-     }         
-     */
      $newnode = Node::create($one_node->toArray());
      $newnode->save();
-
 } 
 
 #menu
-echo("recreating menus");
+echo("recreating menus\n");
 foreach($menu_multiple as $menu => $one_menu) {
      //print_r($one_node->toArray());
      $newmenu = MenuLinkContent::create($one_menu->toArray());
      $newmenu->save();
 }
 
+//block content
+echo("recreating block content\n");
+foreach($block_cont_multiple as $block_content => $one_block_content){
+     $new_block_content = BlockContent::create($one_block_content->toArray());
+     $new_block_content->save();
+}
+
+echo("printing out existing blocks\n");
+$new_blocks_result = \Drupal::entityQuery('block')
+->condition('plugin','block_content','STARTS_WITH')
+->condition('id','stable_footeraddress','<>')
+->execute();
+$new_blocks_storage = \Drupal::entityTypeManager()->getStorage('block');
+$new_blocks_multiple = $new_blocks_storage->loadMultiple($new_blocks_result);
+
+foreach($new_blocks_multiple as $new_bid => $one_new_block){
+    echo("deleting:  ".$one_new_block->id()."   ".$one_new_block->uuid()."\n");
+    $one_new_block->delete();
+}
+
+//blocks
+echo("recreating blocks:  number:  ".strval(count($blocks_multiple))."\n");
+foreach($blocks_multiple as $block => $one_block){
+     $new_block = Block::create($one_block->toArray());
+     $new_block->save();
+}
+
+echo("regenerating path urls\n");
+foreach($node_multiple as $nid => $one_node) {
+     \Drupal::service('pathauto.generator')->updateEntityAlias($one_node, 'update');
+}
+
+echo("clearing caches one more time.\n");
+
+exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
 
 /* # entities:
 (roughly in order)
@@ -164,8 +162,9 @@ X media
 X paragraphs
 X nodes
 X menu_links
-block_content
-blocks
+X block_content
+X blocks
+
 taxonomy_vocabulary
 taxonomy_term
 
