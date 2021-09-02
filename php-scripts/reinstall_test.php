@@ -10,6 +10,7 @@ use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block\Entity\Block;
 use Drupal\taxonomy\Entity\Term;
+use \Drupal\user\Entity\User;
 
 echo("WARNING: \n");
 echo("This process does NOT move over: \n");
@@ -19,6 +20,12 @@ echo("Shortcuts or shortcut sets, if these are setup on any site they should be 
 echo("Views. if custom views are added they should either be added to this list or working in through configuration files.\n");
 echo("If any of the above are needed this or a duplicate script will need to be updated.\n");
 
+echo("loading users.\n");
+$user_result = \Drupal::entityQuery('user')
+->condition('uid',5,'>')
+->execute();
+$users_storage = \Drupal::entityTypeManager()->getStorage('user');
+$user_multiple = $users_storage->loadMultiple($user_result);
 
 // Load All nodes.
 echo("loading nodes\n");
@@ -94,11 +101,10 @@ foreach($myoutput as $output) {
      echo($output."\n");
 }
 
-#taxonomy terms
-echo("recreating taxonomy terms:  ".strval(count($term_multiple))."\n");
-foreach($term_multiple as $tid => $one_term){
-     $newterm = Term::create($one_term->toArray());
-     $newterm->save();
+echo("recreating users:  ".strval(count($user_multiple))."\n");
+foreach($user_multiple as $user => $one_user){
+     $newuser = User::create($one_user->toArray());
+     $newuser->save();
 }
 
 #files
@@ -107,6 +113,13 @@ foreach($file_multiple as $file => $one_file) {
      //print_r($one_file->toArray());
      $newfile = File::create($one_file->toArray());
      $newfile->save();
+}
+
+#taxonomy terms
+echo("recreating taxonomy terms:  ".strval(count($term_multiple))."\n");
+foreach($term_multiple as $tid => $one_term){
+     $newterm = Term::create($one_term->toArray());
+     $newterm->save();
 }
 
 #media
@@ -186,9 +199,11 @@ X menu_links
 X block_content
 X blocks
 X taxonomy_term
+X users
 
-users
 redirects
+
+I don't think I need the path aliaes, just the redirects
 path aliases
  */
 
