@@ -9,12 +9,27 @@ use Drupal\media\Entity\Media;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block\Entity\Block;
+use Drupal\taxonomy\Entity\Term;
+
+echo("WARNING: \n");
+echo("This process does NOT move over: \n");
+echo("Custom vocabularies (created on the site to be reinstalled, but not in the install profile.)\n");
+echo("Custom Menus (it'll move over menu items, so that might create errors if the menu doesn't also exist.)\n");
+echo("Shortcuts or shortcut sets, if these are setup on any site they should be added to this script.");
+echo("Views. if custom views are added they should either be added to this list or working in through configuration files.\n");
+echo("If any of the above are needed this or a duplicate script will need to be updated.\n");
+
 
 // Load All nodes.
 echo("loading nodes\n");
 $node_result = \Drupal::entityQuery('node')->execute();
 $nodes_storage = \Drupal::entityTypeManager()->getStorage('node');
 $node_multiple = $nodes_storage->loadMultiple($node_result);
+
+echo("loading Taxonomy Terms (But not entire vocabularies!)\n");
+$term_result = \Drupal::entityQuery('taxonomy_term')->execute();
+$terms_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+$term_multiple = $terms_storage->loadMultiple($term_result);
 
 echo("loading files (But NOT the first one!) \n");
 $file_result = \Drupal::entityQuery('file')
@@ -79,6 +94,12 @@ foreach($myoutput as $output) {
      echo($output."\n");
 }
 
+#taxonomy terms
+echo("recreating taxonomy terms:  ".strval(count($term_multiple))."\n");
+foreach($term_multiple as $tid => $one_term){
+     $newterm = Term::create($one_term->toArray());
+     $newterm->save();
+}
 
 #files
 echo("recreating files:  ".strval(count($file_multiple))."\n");
@@ -126,7 +147,7 @@ foreach($block_cont_multiple as $block_content => $one_block_content){
      $new_block_content->save();
 }
 
-echo("printing out existing blocks\n");
+echo("printing out existing blocks to be deleted.\n");
 $new_blocks_result = \Drupal::entityQuery('block')
 ->condition('plugin','block_content','STARTS_WITH')
 ->condition('id','stable_footeraddress','<>')
@@ -164,14 +185,14 @@ X nodes
 X menu_links
 X block_content
 X blocks
+X taxonomy_term
 
-taxonomy_vocabulary
-taxonomy_term
-
+users
+redirects
+path aliases
  */
 
 // code snippet to get all entity types:
 //drushl eval "print_r(array_keys(\Drupal::entityTypeManager()->getDefinitions()));"
-//var_dump($entities[5]);
 
 
