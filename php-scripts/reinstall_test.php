@@ -10,7 +10,9 @@ use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block\Entity\Block;
 use Drupal\taxonomy\Entity\Term;
-use \Drupal\user\Entity\User;
+use Drupal\user\Entity\User;
+use Drupal\path_alias\Entity\PathAlias;
+use Drupal\redirect\Entity\Redirect;
 
 echo("WARNING: \n");
 echo("This process does NOT move over: \n");
@@ -75,6 +77,15 @@ $blocks_result = \Drupal::entityQuery('block')
 $blocks_storage = \Drupal::entityTypeManager()->getStorage('block');
 $blocks_multiple = $blocks_storage->loadMultiple($blocks_result);
 
+echo("loading path alises\n");
+$path_result = \Drupal::entityQuery('path_alias')->execute();  
+$path_storage = \Drupal::entityTypeManager()->getStorage('path_alias');
+$path_multiple = $path_storage->loadMultiple($path_result);
+
+echo("loading redirects\n");
+$redirect_result = \Drupal::entityQuery('redirect')->execute();  
+$redirect_storage = \Drupal::entityTypeManager()->getStorage('redirect');
+$redirect_multiple = $redirect_storage->loadMultiple($redirect_result);
 
 ############# loaded everthing. now reinstalling site. ##################
 $myoutput = [];
@@ -107,7 +118,7 @@ foreach($user_multiple as $user => $one_user){
      $newuser->save();
 }
 
-#files
+//files
 echo("recreating files:  ".strval(count($file_multiple))."\n");
 foreach($file_multiple as $file => $one_file) {
      //print_r($one_file->toArray());
@@ -115,37 +126,37 @@ foreach($file_multiple as $file => $one_file) {
      $newfile->save();
 }
 
-#taxonomy terms
+//taxonomy terms
 echo("recreating taxonomy terms:  ".strval(count($term_multiple))."\n");
 foreach($term_multiple as $tid => $one_term){
      $newterm = Term::create($one_term->toArray());
      $newterm->save();
 }
 
-#media
-echo("reacreating media\n");
+//media
+echo("reacreating media:  ".strval(count($media_multiple))."\n");
 foreach($media_multiple as $media => $one_media) {
      //print_r($one_file->toArray());
      $newmedia = Media::create($one_media->toArray());
      $newmedia->save();
 }
 
-#paragraphs
-echo("recreating paragraphs\n");
+//paragraphs
+echo("recreating paragraphs:  ".strval(count($par_multiple))."\n");
 foreach($par_multiple as $pid => $one_par) {
      //print_r($one_par->toArray());
      $newpar = Paragraph::create($one_par->toArray());
      $newpar->save();
 }
 
-#node 
-echo("recreating nodes\n");
+//node 
+echo("recreating nodes:  ".strval(count($node_multiple))."\n");
 foreach($node_multiple as $nid => $one_node) {
      $newnode = Node::create($one_node->toArray());
      $newnode->save();
 } 
 
-#menu
+//menu
 echo("recreating menus\n");
 foreach($menu_multiple as $menu => $one_menu) {
      //print_r($one_node->toArray());
@@ -174,15 +185,22 @@ foreach($new_blocks_multiple as $new_bid => $one_new_block){
 }
 
 //blocks
-echo("recreating blocks:  number:  ".strval(count($blocks_multiple))."\n");
+echo("recreating blocks:  ".strval(count($blocks_multiple))."\n");
 foreach($blocks_multiple as $block => $one_block){
      $new_block = Block::create($one_block->toArray());
      $new_block->save();
 }
 
-echo("regenerating path urls\n");
-foreach($node_multiple as $nid => $one_node) {
-     \Drupal::service('pathauto.generator')->updateEntityAlias($one_node, 'update');
+echo("recreating path aliases:  ".strval(count($path_multiple))."\n");
+foreach($path_multiple as $path => $one_path){
+     $new_path = PathAlias::create($one_path->toArray());
+     $new_path->save();
+}
+
+echo("recreating redirects:  ".strval(count($redirect_multiple))."\n");
+foreach($redirect_multiple as $redirect => $one_redirect){
+     $new_redirect = Redirect::create($one_redirect->toArray());
+     $new_redirect->save();
 }
 
 echo("clearing caches one more time.\n");
@@ -200,11 +218,8 @@ X block_content
 X blocks
 X taxonomy_term
 X users
-
-redirects
-
-I don't think I need the path aliaes, just the redirects
-path aliases
+X redirects
+X path aliases
  */
 
 // code snippet to get all entity types:
