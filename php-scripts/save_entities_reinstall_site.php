@@ -20,6 +20,12 @@ echo("Shortcuts or shortcut sets, if these are setup on any site they should be 
 echo("Views. if custom views are added they should either be added to this list or working in through configuration files.\n");
 echo("If any of the above are needed this or a duplicate script will need to be updated.\n");
 
+$site_name = $_SERVER['argv'][5];
+echo("------------------------------------------------------------------------------------\n");
+echo("Running script with site name:  ".$site_name."  \n");
+echo("If this site name is incorrect cancel now.\n");
+
+
 //Load all users.
 echo("loading users.\n");
 $user_result = \Drupal::entityQuery('user')
@@ -108,9 +114,7 @@ echo(strval(count($redirect_multiple))."  Redirects Loaded. \n\n");
 $myoutput = [];
 echo("reinstalling site\n");
 
-exec('sh /var/www/casdev/web/scripts/bash-scripts/cas_department_install4overwrite.sh cleanparagraphs',$myoutput);
-
-//exec('$(drush @casdev.cleanparagraphs sql:connect) < /var/www/casdev/web/sites/cleanparagraphs/files/private/backup_migrate/cleanparagraphs-reinstall-1027-090121.sql');
+exec('sh /var/www/casdev/web/scripts/bash-scripts/cas_department_install4save_reinstall.sh '.$site_name,$myoutput);
 
 foreach($myoutput as $output) {
      echo($output."\n");
@@ -118,7 +122,8 @@ foreach($myoutput as $output) {
 
 echo("reinstall complete. cleaing caches\n");
 
-exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
+$myoutput = [];
+exec('drush @casdev.'.$site_name.' -y cr', $myoutput);
 
 // Gonna leave this here.  Its how to clear menu caches then rebuild.  I had menu issues originally. Now I just delete then rebuild them.
 //\Drupal::cache('menu')->invalidateAll();
@@ -126,11 +131,14 @@ exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
 
 echo("\n running other script.\n");
 
-exec('drush @casdev.cleanparagraphs scr scripts/php-scripts/delete_menus_nodes.php',$myoutput);
+$myoutput = [];
+exec('drush @casdev.'.$site_name.' scr scripts/php-scripts/delete_menus_nodes.php',$myoutput);
 
 foreach($myoutput as $output) {
      echo($output."\n");
 }
+
+echo("\n Recreating content now\n");
 
 //recreate users
 echo("recreating users:  ".strval(count($user_multiple))."\n");
@@ -227,7 +235,7 @@ foreach($redirect_multiple as $redirect => $one_redirect){
 
 echo("clearing caches one more time.\n");
 
-exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
+exec('drush @casdev.'.$site_name.' -y cr', $myoutput);
 
 /* # entities:
 (roughly in order)

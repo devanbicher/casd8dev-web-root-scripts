@@ -12,7 +12,8 @@ foreach($new_menu_multiple as $delete_menu){
      $delete_menu->delete();
 }
 
-exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
+#hopefully we don'tneed that cache clear. and if we do we will have to find a way to run it internally.
+#exec('drush @casdev.cleanparagraphs -y cr', $myoutput);
 
 echo("deleting nodes from new site\n");
 $new_node_result = \Drupal::entityQuery('node')->execute();
