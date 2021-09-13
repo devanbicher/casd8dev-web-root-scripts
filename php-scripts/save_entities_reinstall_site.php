@@ -14,10 +14,10 @@ use Drupal\redirect\Entity\Redirect;
 
 echo("WARNING: \n");
 echo("This process does NOT move over: \n");
-echo("Custom vocabularies (created on the site to be reinstalled, but not in the install profile.)\n");
-echo("Custom Menus (it'll move over menu items, so that might create errors if the menu doesn't also exist.)\n");
-echo("Shortcuts or shortcut sets, if these are setup on any site they should be added to this script.");
-echo("Views. if custom views are added they should either be added to this list or working in through configuration files.\n");
+echo("Custom vocabularies - (created on the site to be reinstalled, but not in the install profile.)\n");
+echo("Custom Menus - (it'll move over menu items, so that might create errors if the menu doesn't also exist.)\n");
+echo("Shortcuts OR shortcut sets - if these are setup on any site they should be added to this script.");
+echo("Views - if custom views are added they should either be added to this list or working in through configuration files.\n");
 echo("If any of the above are needed this or a duplicate script will need to be updated.\n");
 
 $site_name = $_SERVER['argv'][5];
@@ -237,8 +237,7 @@ echo("clearing caches one more time.\n");
 
 exec('drush @casdev.'.$site_name.' -y cr', $myoutput);
 
-/* # entities:
-(roughly in order)
+/*  entities: (in order of how they are reloaded)
 X users
 X file
 X taxonomy_term
