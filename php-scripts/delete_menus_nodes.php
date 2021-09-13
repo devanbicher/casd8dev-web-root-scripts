@@ -19,10 +19,18 @@ echo("deleting nodes from new site\n");
 $new_node_result = \Drupal::entityQuery('node')->execute();
 $new_nodes_storage = \Drupal::entityTypeManager()->getStorage('node');
 $new_node_multiple = $new_nodes_storage->loadMultiple($new_node_result);
-krsort($new_node_multiple);
 foreach($new_node_multiple as $dnid => $delete_node) {
      echo("deleted: ".strval($dnid)."    ".$delete_node->uuid()."   ".$delete_node->getTitle()."\n");
      $delete_node->delete();
+}
+
+echo("deleting Terms from new site\n");
+$new_term_result = \Drupal::entityQuery('taxonomy_term')->execute();
+$new_terms_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+$new_term_multiple = $new_terms_storage->loadMultiple($new_term_result);
+foreach($new_term_multiple as $tid => $delete_term) {
+     echo("deleted: ".strval($tid)."    ".$delete_term->uuid()."   ".$delete_term->getName()."\n");
+     $delete_term->delete();
 }
 
 \Drupal::cache('menu')->invalidateAll();
